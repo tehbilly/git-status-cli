@@ -12,3 +12,16 @@
 [main-myget-badge]: https://img.shields.io/www.myget/git-status-cli/vpre/git-status-cli.svg?style=flat-square&label=myget
 
 A simple command-line utility to determine status of all Git repositories in a directory structure.
+
+## Usage
+
+```text
+Usage: git-status [options]
+
+Options:
+  --version         Show version information
+  -?|-h|--help      Show help information
+  -p|--path <PATH>  The path to scan.
+```
+
+By default, **git-status** will scan for git repositories in the current directory and its sub-directories. You can specify the directory (and sub-directories) to scan by passing the `-p|--path` option. This option can be passed multiple times.
