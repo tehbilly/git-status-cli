@@ -13,6 +13,8 @@
 
 A simple command-line utility to determine status of all Git repositories in a directory structure.
 
+![](screenshot.png)
+
 ## Usage
 
 ```text
