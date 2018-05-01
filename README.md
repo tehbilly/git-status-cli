@@ -15,6 +15,14 @@ A simple command-line utility to determine status of all Git repositories in a d
 
 ![](screenshot.png)
 
+## Installation
+
+**git-status-cli** requires the [.NET Core SDK 2.1.300-preview2](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300-preview2) or newer. Once the .NET Core SDK is installed, you can install **git-status-cli** using the following command:
+
+```bash
+dotnet tool install --global git-status-cli
+```
+
 ## Usage
 
 ```text
@@ -26,4 +34,4 @@ Options:
   -p|--path <PATH>  The path to scan.
 ```
 
-By default, **git-status** will scan for git repositories in the current directory and its sub-directories. You can specify the directory (and sub-directories) to scan by passing the `-p|--path` option. This option can be passed multiple times.
+By default, **git-status** will scan for git repositories in the current directory and its sub-directories. You can specify an alternate directory to scan by passing the `-p|--path` option. This option can be passed multiple times for scanning multiple directories.
