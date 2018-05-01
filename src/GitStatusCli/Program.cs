@@ -5,6 +5,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using LibGit2Sharp;
 using McMaster.Extensions.CommandLineUtils;
@@ -22,7 +23,8 @@ namespace GitStatusCli
 
         [Option(CommandOptionType.MultipleValue, Description = "The path to scan.", ShortName = "p", LongName = "path", ValueName = "PATH")]
         public List<string> Paths { get; set; }
-
+ 
+        
         public static int Main(string[] args)
         {
             var services = new ServiceCollection()
@@ -54,9 +56,13 @@ namespace GitStatusCli
         
         public async Task<int> OnExecute(CommandLineApplication app, IConsole console)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
             if (Paths == null || Paths.Count == 0)
                 Paths = new List<string> { _fileSystem.Directory.GetCurrentDirectory() };
             
+            Console.WriteLine("Searching for Git repositories...");
+            Console.WriteLine();
+
             foreach (var path in Paths)
             {
                 string repoPath = LibGit2Sharp.Repository.Discover(path);
@@ -71,7 +77,7 @@ namespace GitStatusCli
 
                     foreach (var subDirectory in subDirectories)
                     {
-                        if (LibGit2Sharp.Repository.IsValid(subDirectory))
+                        if (Repository.IsValid(subDirectory))
                         {
                             await ScanDirectory(subDirectory, console);
                         }
@@ -84,13 +90,32 @@ namespace GitStatusCli
 
         private async Task ScanDirectory(string path, IConsole console)
         {
+            bool hasError = false;
+
+            void FlagError()
+            {
+                if (!hasError)
+                {
+                    hasError = true;
+
+                    console.Write(" ...has issues", ConsoleColor.Red);
+                    console.WriteLine();
+                }
+            }
             
             var repository = new LibGit2Sharp.Repository(path);
-            console.WriteLine(repository.Info.WorkingDirectory);
+
+            console.Write(repository.Info.WorkingDirectory.TrimEnd(new[] { '\\', '/' }));
 
             var status = repository.RetrieveStatus();
+
             if (status.IsDirty)
-                Console.WriteLine("- Has uncommitted changes");
+            {
+                FlagError();
+                
+                console.Write("\u00b1 ", ConsoleColor.Red);
+                console.WriteLine("has uncommitted changes");
+            }
             var branches = repository.Branches;
             foreach (var branch in branches.Where(b => b.IsRemote == false))
             {
@@ -98,11 +123,29 @@ namespace GitStatusCli
                 {
                     if (branch.TrackingDetails?.AheadBy != null && branch.TrackingDetails.AheadBy.Value > 0)
                     {
-                        console.WriteLine($"- Branch {branch.FriendlyName} has {branch.TrackingDetails.AheadBy.Value} non-pushed commits");
+                        FlagError();
+                        
+                        console.Write("\u2191 ", ConsoleColor.Green);
+                        console.Write(branch.FriendlyName, ConsoleColor.Cyan);
+                        console.Write(" is ");
+                        console.Write(branch.TrackingDetails.AheadBy.Value, ConsoleColor.Green);
+                        console.WriteLine(" commits ahead of remote tracking branch");
                     }
                 }
                 else
-                    console.WriteLine($"- Branch {branch.FriendlyName} is non tracking");
+                {
+                    FlagError();
+                    
+                    console.Write("\u0021 ", ConsoleColor.Yellow);
+                    console.Write(branch.FriendlyName, ConsoleColor.Cyan);
+                    console.WriteLine($" is non-tracking");
+                }
+            }
+
+            if (!hasError)
+            {
+                console.Write(" ...ok", ConsoleColor.Green);
+                console.WriteLine();
             }
         }
     }
