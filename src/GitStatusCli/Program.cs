@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -83,12 +84,26 @@ namespace GitStatusCli
 
         private async Task ScanDirectory(string path, IConsole console)
         {
-            console.WriteLine(path);
             
             var repository = new LibGit2Sharp.Repository(path);
+            console.WriteLine(repository.Info.WorkingDirectory);
+
             var status = repository.RetrieveStatus();
+            if (status.IsDirty)
+                Console.WriteLine("- Has uncommitted changes");
             var branches = repository.Branches;
-            var remotes = repository.Network.Remotes;
+            foreach (var branch in branches.Where(b => b.IsRemote == false))
+            {
+                if (branch.IsTracking)
+                {
+                    if (branch.TrackingDetails?.AheadBy != null && branch.TrackingDetails.AheadBy.Value > 0)
+                    {
+                        console.WriteLine($"- Branch {branch.FriendlyName} has {branch.TrackingDetails.AheadBy.Value} non-pushed commits");
+                    }
+                }
+                else
+                    console.WriteLine($"- Branch {branch.FriendlyName} is non tracking");
+            }
         }
     }
 }
