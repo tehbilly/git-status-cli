@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace GitStatusCli
 {
     [Command(
-        Name = "git-status-cli", 
+        Name = "git-status", 
         FullName = "A simple command-line utility to report status of Git repositories.")]
     [VersionOptionFromMember(MemberName = nameof(GetVersion))]
     class Program : CommandBase
@@ -129,7 +129,11 @@ namespace GitStatusCli
                         console.Write(branch.FriendlyName, ConsoleColor.Cyan);
                         console.Write(" is ");
                         console.Write(branch.TrackingDetails.AheadBy.Value, ConsoleColor.Green);
-                        console.WriteLine(" commits ahead of remote tracking branch");
+                        if (branch.TrackingDetails.AheadBy.Value == 1)
+                            console.Write(" commit");
+                        else
+                            console.Write(" commits");
+                        console.WriteLine(" ahead of remote tracking branch");
                     }
                 }
                 else
