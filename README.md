@@ -8,8 +8,8 @@
 
 [main-nuget]: https://www.nuget.org/packages/git-status-cli/
 [main-nuget-badge]: https://img.shields.io/nuget/v/git-status-cli.svg?style=flat-square&label=nuget
-[main-myget]: https://www.myget.org/feed/git-status-cli/package/nuget/git-status-cli
-[main-myget-badge]: https://img.shields.io/www.myget/git-status-cli/vpre/git-status-cli.svg?style=flat-square&label=myget
+[main-myget]: https://www.myget.org/feed/jerriep/package/nuget/git-status-cli
+[main-myget-badge]: https://img.shields.io/www.myget/jerriep/vpre/git-status-cli.svg?style=flat-square&label=myget
 
 A simple command-line utility to determine status of all Git repositories in a directory structure.
 
