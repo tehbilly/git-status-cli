@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -20,6 +21,8 @@ namespace GitStatusCli
     [VersionOptionFromMember(MemberName = nameof(GetVersion))]
     class Program : CommandBase
     {
+        private const ConsoleColor BranchReportingColor = ConsoleColor.Blue;
+
         private readonly IFileSystem _fileSystem;
 
         [Option(CommandOptionType.MultipleValue, Description = "The path to scan.", ShortName = "p", LongName = "path", ValueName = "PATH")]
@@ -66,7 +69,7 @@ namespace GitStatusCli
 
             foreach (var path in Paths)
             {
-                string repoPath = LibGit2Sharp.Repository.Discover(path);
+                string repoPath = Repository.Discover(path);
                 
                 if (!string.IsNullOrEmpty(repoPath))
                 {
@@ -104,7 +107,7 @@ namespace GitStatusCli
                 }
             }
             
-            var repository = new LibGit2Sharp.Repository(path);
+            var repository = new Repository(path);
 
             console.Write(repository.Info.WorkingDirectory.TrimEnd(new[] { '\\', '/' }));
 
@@ -126,28 +129,39 @@ namespace GitStatusCli
             {
                 if (branch.IsTracking)
                 {
-                    if (branch.TrackingDetails?.AheadBy != null && branch.TrackingDetails.AheadBy.Value > 0)
+                    if (branch.TrackingDetails?.AheadBy != null && branch.TrackingDetails.AheadBy.Value > 0 ||
+                        branch.TrackingDetails?.BehindBy != null && branch.TrackingDetails.BehindBy.Value > 0)
                     {
+                        bool hasAheadCommits = false;
+                        
                         FlagError();
                         
-                        console.Write("\u2191 ", ConsoleColor.Green);
-                        console.Write(branch.FriendlyName, ConsoleColor.Cyan);
-                        console.Write(" is ");
-                        console.Write(branch.TrackingDetails.AheadBy.Value, ConsoleColor.Green);
-                        if (branch.TrackingDetails.AheadBy.Value == 1)
-                            console.Write(" commit");
-                        else
-                            console.Write(" commits");
-                        console.WriteLine(" ahead of remote tracking branch");
+                        console.WriteIndent(1);
+                        console.Write($"Branch: {branch.FriendlyName}...{branch.TrackedBranch.FriendlyName} [", BranchReportingColor);
+
+                        if (branch.TrackingDetails?.AheadBy != null && branch.TrackingDetails.AheadBy.Value > 0)
+                        {
+                            hasAheadCommits = true;
+                            console.Write($"{branch.TrackingDetails.AheadBy.Value} ahead", BranchReportingColor);
+                        }
+                        if (branch.TrackingDetails?.BehindBy != null && branch.TrackingDetails.BehindBy.Value > 0)
+                        {
+                            if (hasAheadCommits)
+                                console.Write(", ",BranchReportingColor);
+                            console.Write($"{branch.TrackingDetails.BehindBy.Value} behind", BranchReportingColor);
+                        }
+
+                        console.Write("]", BranchReportingColor);
+                        console.WriteLine();
                     }
                 }
                 else
                 {
                     FlagError();
                     
-                    console.Write("\u0021 ", ConsoleColor.Yellow);
-                    console.Write(branch.FriendlyName, ConsoleColor.Cyan);
-                    console.WriteLine($" is non-tracking");
+                    console.WriteIndent(1);
+                    console.Write($"Branch: {branch.FriendlyName} [non-tracking]", BranchReportingColor);
+                    console.WriteLine();
                 }
             }
 
