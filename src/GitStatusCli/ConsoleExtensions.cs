@@ -26,5 +26,9 @@ namespace GitStatusCli
             console.BackgroundColor = currentBackgroundColor;
         }
 
+        public static void WriteIndent(this IConsole console, int level)
+        {
+            console.Write(new String(' ', level * 2));
+        }
     }
 }

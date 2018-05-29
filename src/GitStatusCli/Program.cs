@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using LibGit2Sharp;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,7 +99,7 @@ namespace GitStatusCli
                 {
                     hasError = true;
 
-                    console.Write(" Outdated", ConsoleColor.Red);
+                    //console.Write(" Outdated", ConsoleColor.Red);
                     console.WriteLine();
                 }
             }
@@ -112,10 +113,14 @@ namespace GitStatusCli
             if (status.IsDirty)
             {
                 FlagError();
-                
-                console.Write("\u00b1 ", ConsoleColor.Red);
-                console.WriteLine("has uncommitted changes");
+
+                if (status.HasStagedChanges())
+                    WriteChanges(console, status.Added.Count(), status.Staged.Count(), status.Removed.Count(), status.RenamedInIndex.Count());
+
+                if (status.HasUnstagedChanges())
+                    WriteChanges(console, status.Untracked.Count(), status.Modified.Count(), status.Missing.Count(), status.RenamedInWorkDir.Count());
             }
+            
             var branches = repository.Branches;
             foreach (var branch in branches.Where(b => b.IsRemote == false))
             {
@@ -151,6 +156,51 @@ namespace GitStatusCli
                 console.Write(" Up to date", ConsoleColor.Green);
                 console.WriteLine();
             }
+        }
+
+        public void WriteChanges(IConsole console, int added, int modified, int deleted, int renamed)
+        {
+            bool hasWrittenYet = false;
+
+            console.WriteIndent(1);
+            console.Write("Staged changes: ");
+            if (added > 0)
+            {
+                console.Write($"{added} added", ConsoleColor.Green);
+
+                hasWrittenYet = true;
+            }
+
+            if (modified > 0)
+            {
+                if (hasWrittenYet)
+                    console.Write(" · ");
+                        
+                console.Write($"{modified} modified", ConsoleColor.Yellow);
+
+                hasWrittenYet = true;
+            }
+
+            if (deleted > 0)
+            {
+                if (hasWrittenYet)
+                    console.Write(" · ");
+
+                console.Write($"{deleted} deleted", ConsoleColor.Red);
+
+                hasWrittenYet = true;
+            }
+
+            if (renamed > 0)
+            {
+                if (hasWrittenYet)
+                    console.Write(" · ");
+
+                console.Write($"{renamed} renamed", ConsoleColor.Blue);
+            }
+
+            console.WriteLine();
+
         }
     }
 }
