@@ -118,10 +118,18 @@ namespace GitStatusCli
                 FlagError();
 
                 if (status.HasStagedChanges())
+                {
+                    console.WriteIndent(1);
+                    console.Write("- Staged changes: ");
                     WriteChanges(console, status.Added.Count(), status.Staged.Count(), status.Removed.Count(), status.RenamedInIndex.Count());
+                }
 
                 if (status.HasUnstagedChanges())
+                {
+                    console.WriteIndent(1);
+                    console.Write("- Unstaged changes: ");
                     WriteChanges(console, status.Untracked.Count(), status.Modified.Count(), status.Missing.Count(), status.RenamedInWorkDir.Count());
+                }
             }
             
             var branches = repository.Branches;
@@ -137,7 +145,8 @@ namespace GitStatusCli
                         FlagError();
                         
                         console.WriteIndent(1);
-                        console.Write($"Branch: {branch.FriendlyName}...{branch.TrackedBranch.FriendlyName} [", BranchReportingColor);
+                        console.Write($"- Branch: {branch.FriendlyName}...{branch.TrackedBranch.FriendlyName} ");
+                        console.Write("[", BranchReportingColor);
 
                         if (branch.TrackingDetails?.AheadBy != null && branch.TrackingDetails.AheadBy.Value > 0)
                         {
@@ -160,14 +169,15 @@ namespace GitStatusCli
                     FlagError();
                     
                     console.WriteIndent(1);
-                    console.Write($"Branch: {branch.FriendlyName} [non-tracking]", BranchReportingColor);
+                    console.Write($"- Branch: {branch.FriendlyName} ");
+                    console.Write("[non-tracking]", BranchReportingColor);
                     console.WriteLine();
                 }
             }
 
             if (!hasError)
             {
-                console.Write(" Up to date", ConsoleColor.Green);
+                console.Write(" ...OK", ConsoleColor.Green);
                 console.WriteLine();
             }
         }
@@ -176,8 +186,6 @@ namespace GitStatusCli
         {
             bool hasWrittenYet = false;
 
-            console.WriteIndent(1);
-            console.Write("Staged changes: ");
             if (added > 0)
             {
                 console.Write($"{added} added", ConsoleColor.Green);
