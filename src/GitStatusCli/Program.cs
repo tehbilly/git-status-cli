@@ -98,7 +98,7 @@ namespace GitStatusCli
                 {
                     hasError = true;
 
-                    console.Write(" ...has issues", ConsoleColor.Red);
+                    console.Write(" Outdated", ConsoleColor.Red);
                     console.WriteLine();
                 }
             }
@@ -148,7 +148,7 @@ namespace GitStatusCli
 
             if (!hasError)
             {
-                console.Write(" ...ok", ConsoleColor.Green);
+                console.Write(" Up to date", ConsoleColor.Green);
                 console.WriteLine();
             }
         }
