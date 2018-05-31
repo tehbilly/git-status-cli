@@ -17,7 +17,7 @@ A simple command-line utility to determine status of all Git repositories in a d
 
 ## Installation
 
-**git-status-cli** requires the [.NET Core SDK 2.1.300-rc1](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300-rc1) or newer. Once the .NET Core SDK is installed, you can install **git-status-cli** using the following command:
+Download and install the [.NET Core 2.1 SDK](https://www.microsoft.com/net/download) or newer. Once installed, run the following command:
 
 ```bash
 dotnet tool install --global git-status-cli
